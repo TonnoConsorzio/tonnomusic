@@ -887,7 +887,7 @@ exports[`Settings view > (Snapshot) renders the settings view 1`] = `
                                   <p
                                     class="text-foreground/60 text-sm select-none"
                                   >
-                                    Open this URL on another device to control Nuclear.
+                                    Open this URL in a browser on the same computer.
                                   </p>
                                 </div>
                                 <div
