@@ -332,7 +332,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn local_rest_sse_and_commands_remain_available() {
+    async fn local_rest_sse_commands_and_vite_origin_follow_build_profile() {
         let actions = Arc::new(AtomicUsize::new(0));
         let (base_url, task) = start_server(actions.clone()).await;
         let client = reqwest::Client::new();
@@ -360,8 +360,18 @@ mod tests {
             .send()
             .await
             .unwrap();
-        assert_eq!(dev_proxy_command.status(), StatusCode::OK);
-        assert_eq!(actions.load(Ordering::SeqCst), 2);
+
+        #[cfg(debug_assertions)]
+        {
+            assert_eq!(dev_proxy_command.status(), StatusCode::OK);
+            assert_eq!(actions.load(Ordering::SeqCst), 2);
+        }
+
+        #[cfg(not(debug_assertions))]
+        {
+            assert_eq!(dev_proxy_command.status(), StatusCode::FORBIDDEN);
+            assert_eq!(actions.load(Ordering::SeqCst), 1);
+        }
 
         let events = client
             .get(format!("{base_url}/api/events"))
