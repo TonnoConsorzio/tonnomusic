@@ -77,10 +77,10 @@ const DEV_VITE_PORT = 5173;
 
 const startServer = async () => {
   const result = await invoke<HttpApiStartResult>('http_api_start');
-  const host = result.lan_address ?? '127.0.0.1';
+  const host = '127.0.0.1';
   const apiBaseUrl = `http://${host}:${result.port}`;
   const remotePort = import.meta.env.DEV ? DEV_VITE_PORT : result.port;
-  const remoteUrl = `http://${host}:${remotePort}`;
+  const remoteUrl = import.meta.env.DEV ? `http://localhost:${remotePort}` : apiBaseUrl;
 
   await setSetting(JAM_REMOTE_URL_SETTING, remoteUrl);
   await setSetting(JAM_API_URL_SETTING, `${apiBaseUrl}/api`);
@@ -97,6 +97,8 @@ const stopServer = async () => {
   await invoke('http_api_stop');
   activeUnsubscribers.forEach((unsubscribe) => unsubscribe());
   activeUnsubscribers = [];
+  await setSetting(JAM_REMOTE_URL_SETTING, '');
+  await setSetting(JAM_API_URL_SETTING, '');
 };
 
 const watchEnabledSetting = () => {
