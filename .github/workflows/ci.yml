@@ -99,4 +99,4 @@ jobs:
       - name: Run Rust tests
         run: cargo test --manifest-path packages/player/src-tauri/Cargo.toml
       - name: Run Jam HTTP tests in release profile
-        run: cargo test --release --manifest-path packages/player/src-tauri/Cargo.toml --lib http_api::
+        run: 'cargo test --release --manifest-path packages/player/src-tauri/Cargo.toml --lib http_api::'
