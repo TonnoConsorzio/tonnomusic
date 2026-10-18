@@ -229,7 +229,14 @@ fn request_is_allowed(request: &Request<axum::body::Body>, expected_port: u16) -
             let expected_origin = format!("http://{host}:{expected_port}");
             origin == expected_origin.as_str() || is_vite_development_origin(origin)
         }
-        None => matches!(request.method().as_str(), "GET" | "HEAD"),
+        None => match request
+            .headers()
+            .get("sec-fetch-site")
+            .and_then(|value| value.to_str().ok())
+        {
+            None | Some("none" | "same-origin") => true,
+            Some(_) => false,
+        },
     }
 }
 
@@ -436,6 +443,14 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(cross_site_command.status(), StatusCode::FORBIDDEN);
+
+        let originless_cross_site_command = client
+            .post(format!("{base_url}/api/playback/next"))
+            .header("sec-fetch-site", "cross-site")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(originless_cross_site_command.status(), StatusCode::FORBIDDEN);
         assert_eq!(actions.load(Ordering::SeqCst), 1);
 
         let preflight = client
