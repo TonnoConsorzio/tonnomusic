@@ -19,7 +19,6 @@ const JAM_API_URL_SETTING = 'core.integrations.jam.apiUrl';
 
 type HttpApiStartResult = {
   port: number;
-  lan_address: string | null;
 };
 
 type Unsubscribe = () => void;
@@ -80,7 +79,9 @@ const startServer = async () => {
   const host = '127.0.0.1';
   const apiBaseUrl = `http://${host}:${result.port}`;
   const remotePort = import.meta.env.DEV ? DEV_VITE_PORT : result.port;
-  const remoteUrl = import.meta.env.DEV ? `http://localhost:${remotePort}` : apiBaseUrl;
+  const remoteUrl = import.meta.env.DEV
+    ? `http://localhost:${remotePort}`
+    : apiBaseUrl;
 
   await setSetting(JAM_REMOTE_URL_SETTING, remoteUrl);
   await setSetting(JAM_API_URL_SETTING, `${apiBaseUrl}/api`);
