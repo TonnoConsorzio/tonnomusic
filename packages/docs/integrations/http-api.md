@@ -6,7 +6,7 @@ description: Control Nuclear from scripts and other tools via the HTTP API.
 
 When Nuclear Jam is enabled, Nuclear exposes a local HTTP API on the same server that serves the remote control UI. You can use it to build your own integrations, scripts, or alternative remotes.
 
-Enable Nuclear Jam in Settings → Integrations. The **API URL** is local only (for example `http://127.0.0.1:4120/api`). In this release Jam binds to IPv4 loopback, so LAN and phone access are disabled pending secure pairing and HTTPS. Requests from non-loopback Host headers or foreign browser origins are rejected. Only use this control API on a trusted computer.
+Enable Nuclear Jam in Settings → Integrations. The **API URL** is local only (for example `http://127.0.0.1:4120/api`). In this release Jam binds to IPv4 loopback, so LAN and phone access are disabled pending secure pairing and HTTPS. Local scripts can call the loopback URL directly; browser requests from foreign origins are rejected. Only use this control API on a trusted computer.
 
 ## Endpoints
 
