@@ -833,7 +833,7 @@ exports[`Settings view > (Snapshot) renders the settings view 1`] = `
                                   <p
                                     class="text-foreground/60 text-sm select-none"
                                   >
-                                    Start a local web server that lets you control Nuclear from other devices on your network.
+                                    Start a local-only browser controller on this computer. LAN connections are temporarily disabled.
                                   </p>
                                 </div>
                                 <div
@@ -887,7 +887,7 @@ exports[`Settings view > (Snapshot) renders the settings view 1`] = `
                                   <p
                                     class="text-foreground/60 text-sm select-none"
                                   >
-                                    Open this URL on another device to control Nuclear.
+                                    Open this URL in a browser on the same computer.
                                   </p>
                                 </div>
                                 <div

@@ -27,6 +27,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Type check
+        run: pnpm type-check
+
   test:
     runs-on: ubuntu-latest
 
@@ -47,7 +50,7 @@ jobs:
           files: ./packages/*/coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
@@ -92,3 +95,38 @@ jobs:
         run: pnpm --filter @nuclearplayer/player tauri build --debug --no-bundle
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Rust tests
+        run: cargo test --manifest-path packages/player/src-tauri/Cargo.toml
+      - name: Run Jam HTTP tests in release profile
+        run: 'cargo test --release --manifest-path packages/player/src-tauri/Cargo.toml --lib http_api::'
+
+  jam-security-platforms:
+    name: Jam HTTP security (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, macos-15]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/player/src-tauri -> target
+
+      - name: Prepare compile-only Tauri frontend directory
+        shell: bash
+        run: mkdir -p packages/player/dist
+
+      - name: Run Jam HTTP tests in debug profile
+        run: 'cargo test --manifest-path packages/player/src-tauri/Cargo.toml --lib http_api::'
+
+      - name: Run Jam HTTP tests in release profile
+        run: 'cargo test --release --manifest-path packages/player/src-tauri/Cargo.toml --lib http_api::'

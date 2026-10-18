@@ -283,7 +283,7 @@ export const CORE_SETTINGS: SettingDefinition[] = [
   {
     id: 'integrations.jam.enabled',
     title: 'preferences.integrations.jam.enabled.title',
-    description: 'preferences.integrations.jam.enabled.description',
+    description: 'preferences.integrations.jam.enabled.localDescription',
     category: 'integrations',
     kind: 'boolean',
     default: false,
@@ -292,7 +292,7 @@ export const CORE_SETTINGS: SettingDefinition[] = [
   {
     id: 'integrations.jam.remoteUrl',
     title: 'preferences.integrations.jam.remoteUrl.title',
-    description: 'preferences.integrations.jam.remoteUrl.description',
+    description: 'preferences.integrations.jam.remoteUrl.localDescription',
     category: 'integrations',
     kind: 'string',
     default: '',
