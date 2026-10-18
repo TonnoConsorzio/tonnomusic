@@ -27,6 +27,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Type check
+        run: pnpm type-check
+
   test:
     runs-on: ubuntu-latest
 
@@ -92,3 +95,6 @@ jobs:
         run: pnpm --filter @nuclearplayer/player tauri build --debug --no-bundle
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run Rust tests
+        run: cargo test --manifest-path packages/player/src-tauri/Cargo.toml
