@@ -235,7 +235,7 @@ fn request_is_allowed(request: &Request<axum::body::Body>, expected_port: u16) -
 
 #[cfg(debug_assertions)]
 fn is_vite_development_origin(origin: &str) -> bool {
-    origin == "http://127.0.0.1:5173"
+    origin == "http://localhost:5173" || origin == "http://127.0.0.1:5173"
 }
 
 #[cfg(not(debug_assertions))]
@@ -349,7 +349,7 @@ mod tests {
 
         let dev_proxy_command = client
             .post(format!("{base_url}/api/playback/next"))
-            .header(header::ORIGIN, "http://127.0.0.1:5173")
+            .header(header::ORIGIN, "http://localhost:5173")
             .send()
             .await
             .unwrap();
