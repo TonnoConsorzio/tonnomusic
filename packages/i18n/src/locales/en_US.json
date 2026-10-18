@@ -451,11 +451,11 @@
       "jam": {
         "enabled": {
           "title": "Nuclear Jam",
-          "description": "Start a local web server that lets you control Nuclear from other devices on your network."
+          "description": "Start a local-only browser controller on this computer. LAN connections are temporarily disabled."
         },
         "remoteUrl": {
           "title": "Remote URL",
-          "description": "Open this URL on another device to control Nuclear."
+          "description": "Open this URL in a browser on the same computer."
         },
         "apiUrl": {
           "title": "API URL",
