@@ -80,7 +80,7 @@ async fn start_server(
     let router = routes::router(bridge, events_tx);
 
     let tcp_listener =
-        match crate::net::bind_first_available_port("0.0.0.0", REMOTE_PORT_START, REMOTE_PORT_END)
+        match crate::net::bind_first_available_port("127.0.0.1", REMOTE_PORT_START, REMOTE_PORT_END)
             .await
         {
             Ok(listener) => listener,
@@ -92,8 +92,8 @@ async fn start_server(
         };
 
     let bound_port = tcp_listener.local_addr().unwrap().port();
-    let lan_address = crate::net::local_lan_ip().map(|ip| ip.to_string());
-    log::info!("HTTP API server listening on http://0.0.0.0:{bound_port}/api/health");
+    let lan_address = None;
+    log::info!("HTTP API server listening on http://127.0.0.1:{bound_port}/api/health");
     let _ = ready.send(Ok(HttpApiStartResult {
         port: bound_port,
         lan_address,
@@ -141,7 +141,7 @@ pub async fn http_api_start(
     let mut guard = state.running.lock().await;
     if let Some(server) = guard.as_ref() {
         log::info!("HTTP API server already running on port {}", server.port);
-        let lan_address = crate::net::local_lan_ip().map(|ip| ip.to_string());
+        let lan_address = None;
         return Ok(HttpApiStartResult {
             port: server.port,
             lan_address,
@@ -184,4 +184,16 @@ pub async fn http_api_stop(state: tauri::State<'_, HttpApiState>) -> Result<(), 
         log::info!("HTTP API server already stopped");
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn jam_listener_is_loopback_only() {
+        let listener = crate::net::bind_first_available_port("127.0.0.1", 0, 0)
+            .await.expect("local listener");
+        assert!(listener.local_addr().unwrap().ip().is_loopback());
+    }
 }
