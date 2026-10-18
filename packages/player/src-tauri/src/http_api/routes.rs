@@ -1,8 +1,9 @@
 use std::convert::Infallible;
 
 use axum::{
-    extract::{Path, State},
-    http::StatusCode,
+    extract::{Path, Request, State},
+    http::{header, HeaderMap, HeaderValue, StatusCode},
+    middleware::{self, Next},
     response::{
         sse::{Event, KeepAlive, Sse},
         IntoResponse, Response,
@@ -24,6 +25,26 @@ pub struct AppState {
 }
 
 pub(super) struct BridgeErrorResponse(pub(super) BridgeError);
+
+fn local_request_allowed(headers: &HeaderMap) -> bool {
+    let Some(host) = headers.get(header::HOST).and_then(|v| v.to_str().ok()) else { return false; };
+    let Some((hostname, port)) = host.rsplit_once(':') else { return false; };
+    let Ok(port) = port.parse::<u16>() else { return false; };
+    if !(4120..=4129).contains(&port) || !(hostname == "127.0.0.1" || hostname.eq_ignore_ascii_case("localhost")) { return false; }
+    match headers.get(header::ORIGIN) {
+        None => true,
+        Some(value) => value.to_str().map(|origin| origin.eq_ignore_ascii_case(&format!("http://{host}"))).unwrap_or(false),
+    }
+}
+
+async fn guard_local_request(request: Request, next: Next) -> Response {
+    if !local_request_allowed(request.headers()) { return StatusCode::FORBIDDEN.into_response(); }
+    let mut response = next.run(request).await;
+    response.headers_mut().insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
+    response.headers_mut().insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
+    response
+}
+
 
 impl IntoResponse for BridgeErrorResponse {
     fn into_response(self) -> Response {
@@ -193,4 +214,22 @@ pub fn router(bridge: Bridge, events_tx: broadcast::Sender<RemoteEvent>) -> Rout
         .route("/api/lyrics/current", get(lyrics::get_current_lyrics))
         .fallback(super::frontend::serve_frontend)
         .with_state(state)
+        .layer(middleware::from_fn(guard_local_request))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn rejects_foreign_hosts_and_origins() {
+        let mut headers = HeaderMap::new();
+        headers.insert(header::HOST, HeaderValue::from_static("127.0.0.1:4120"));
+        assert!(local_request_allowed(&headers));
+        headers.insert(header::ORIGIN, HeaderValue::from_static("https://evil.example"));
+        assert!(!local_request_allowed(&headers));
+        headers.remove(header::ORIGIN);
+        headers.insert(header::HOST, HeaderValue::from_static("evil.example:4120"));
+        assert!(!local_request_allowed(&headers));
+    }
+}
+
