@@ -35,7 +35,7 @@ export default defineConfig(() => ({
   ],
   clearScreen: false,
   server: {
-    host: process.env.VITE_HOST ?? 'localhost',
+    host: 'localhost',
     port: 5173,
     strictPort: true,
     watch: {
