@@ -415,8 +415,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn rejects_originless_mutations_and_cors_preflight() {
-        let (base_url, task) = start_server(Arc::new(AtomicUsize::new(0))).await;
+    async fn allows_originless_local_scripts_but_rejects_cross_site_and_preflight() {
+        let actions = Arc::new(AtomicUsize::new(0));
+        let (base_url, task) = start_server(actions.clone()).await;
         let client = reqwest::Client::new();
 
         let originless_command = client
@@ -424,7 +425,18 @@ mod tests {
             .send()
             .await
             .unwrap();
-        assert_eq!(originless_command.status(), StatusCode::FORBIDDEN);
+        assert_eq!(originless_command.status(), StatusCode::OK);
+        assert_eq!(actions.load(Ordering::SeqCst), 1);
+
+        let cross_site_command = client
+            .post(format!("{base_url}/api/playback/next"))
+            .header(header::ORIGIN, "https://attacker.example")
+            .header("sec-fetch-site", "cross-site")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(cross_site_command.status(), StatusCode::FORBIDDEN);
+        assert_eq!(actions.load(Ordering::SeqCst), 1);
 
         let preflight = client
             .request(Method::OPTIONS, format!("{base_url}/api/playback/next"))
