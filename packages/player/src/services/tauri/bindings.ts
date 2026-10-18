@@ -82,7 +82,6 @@ export type HourlyListeningTime = {
 
 export type HttpApiStartResult = {
 	port: number,
-	lan_address: string | null,
 };
 
 export type HttpRequest = {
