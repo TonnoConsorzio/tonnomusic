@@ -33,7 +33,11 @@ fn local_request_allowed(headers: &HeaderMap) -> bool {
     if !(4120..=4129).contains(&port) || !(hostname == "127.0.0.1" || hostname.eq_ignore_ascii_case("localhost")) { return false; }
     match headers.get(header::ORIGIN) {
         None => true,
-        Some(value) => value.to_str().map(|origin| origin.eq_ignore_ascii_case(&format!("http://{host}"))).unwrap_or(false),
+        Some(value) => value.to_str().map(|origin| {
+            origin.eq_ignore_ascii_case(&format!("http://{host}"))
+                || (cfg!(debug_assertions) && (origin == "http://localhost:5173"
+                    || origin == "http://127.0.0.1:5173"))
+        }).unwrap_or(false),
     }
 }
 
